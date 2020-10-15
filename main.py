@@ -45,6 +45,7 @@ class Game:
         self._tkroot.mainloop()
 
 
+# Test start game
 game = Game(15, 500, {
     True: "Doge", False: "Meow"
 })
