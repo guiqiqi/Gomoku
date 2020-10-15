@@ -239,6 +239,8 @@ if __name__ == "__main__":
 
     value = 0
     checked = set()
+
+    # Test click handler
     def test(row, column):
         global value, checked
         if (row, column) in checked:
