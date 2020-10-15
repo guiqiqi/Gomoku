@@ -164,7 +164,6 @@ class Manager:
 
 # Test case
 if __name__ == "__main__":
-
     size = 10
 
     # Test for size property
