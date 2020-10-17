@@ -4,9 +4,12 @@ Use Tkinter and Canvas to draw interface
 Provide a way to draw pieces
 """
 
+from player import Player
+from settings import GameEndedError, SettedGridError, ViewSettings, GameSettingError
+
 import tkinter
 import tkinter.messagebox as msg
-from typing import Callable, Iterable, NoReturn, Tuple, Union
+from typing import Callable, Iterable, Tuple, Union
 
 
 class Board:
@@ -22,23 +25,24 @@ class Board:
     """
     # White space between the edge of the
     # window and the main interface of the game
-    PADDING = 30
-    ICONMAP = "logo.ico"
-    TITLE = "Gomoku"  # Game window title
+    PADDING = ViewSettings.PADDING
+    ICONMAP = ViewSettings.ICONMAP
+    TITLE = ViewSettings.TITLE  # Game window title
 
-    BLACK = "Black"  # Black player
-    WHITE = "White"  # White player
-    BWIN = "#B52016"  # Win color black
-    WWIN = "#EB9B96"  # Win color white
+    BLACK = ViewSettings.BLACK  # Black player
+    WHITE = ViewSettings.WHITE  # White player
+    BWIN = ViewSettings.BWIN  # Win color black
+    WWIN = ViewSettings.WWIN  # Win color white
 
-    BGCOLOR = "#FEBE0B"  # Background color for game board
-    BHINT = "#333333"  # Black hinter
-    WHINT = "#F0F0F0"  # White hinter
+    BGCOLOR = ViewSettings.BGCOLOR  # Background color for game board
+    BHINT = ViewSettings.BHINT  # Black hinter
+    WHINT = ViewSettings.WHINT  # White hinter
 
     LOCATINGR = 5  # Radius of location point
     OUTLINEMARG = 3  # Pixels margin of outline
 
-    def __init__(self, root: tkinter.Tk, size: int, grids: int) -> None:
+    def __init__(self, root: tkinter.Tk, size: int,
+                 grids: int, user: bool, mpmode: bool) -> None:
         """
         Instantiate a new game board object.
         Draw on the given parent Tk object.
@@ -46,10 +50,16 @@ class Board:
             root: in which window you want to draw
             size: total game window size
             grids: number of grids (usually 15 or 19)
+            user: who are player:
+                True: black
+                False: white
+                * If mpmode is False it will change by click
+
+            mpmode: active multiplayer mode
         """
         # Check for grids number
         if (grids % 2 != 1):
-            raise ValueError("Invalid grids number")
+            raise GameSettingError("Invalid grids number")
 
         # Patch for invalid size and grids
         self._root = root
@@ -81,6 +91,8 @@ class Board:
         # Handle left key function
         self._click_handler = None
         self._restart_handler = None
+        self._mpmode = mpmode
+        self._user = user
 
         # Initial menubar
         menubar = tkinter.Menu(self._root)
@@ -89,8 +101,9 @@ class Board:
         menubar.add_cascade(label="Game", menu=controller)
         menubar.add_cascade(label="About", menu=about)
 
-        controller.add_command(label="New Game", 
+        controller.add_command(label="New Game",
                                command=self._restart_handler)
+        controller.add_command(label="Restart Game", command=self._restart)
         controller.add_separator()
         controller.add_command(label="Exit Game", command=self._exit)
 
@@ -119,32 +132,33 @@ class Board:
             "Wish you a happy game!"
         ))
 
-    def win(self, who: str, turn: bool, pieces: Iterable[Tuple[int, int]]) -> None:
+    def win(self, who: Player, turn: bool, pieces: Iterable[Tuple[int, int]]) -> None:
         """Show congratulations"""
         # Pieces to mark the winning side.
         for row, column in pieces:
             color = self.WWIN if not turn else self.BWIN
             self.play(row, column, color)
 
-        msg.showinfo("Congratulations", "{player} win!".format(player=who))
+        msg.showinfo("Congratulations",
+                     "{player} win!".format(player=str(who)))
 
     @property
-    def click(self) -> Union[Callable[[int, int], bool], None]:
+    def click(self) -> Union[Callable[[int, int], None], None]:
         """Return leftkey function"""
         return self._click_handler
 
     @click.setter
-    def click(self, func: Union[Callable[[int, int], bool], None]) -> None:
+    def click(self, func: Union[Callable[[int, int], None], None]) -> None:
         """Set leftkey handler"""
         self._click_handler = func
 
     @property
-    def restart(self) -> Union[Callable[[int, int], NoReturn], None]:
+    def restart(self) -> Union[Callable[[], None], None]:
         """Return restart function"""
         return self._restart_handler
 
     @restart.setter
-    def restart(self, func: Union[Callable[[int, int], NoReturn], None]) -> None:
+    def restart(self, func: Union[Callable[[], None], None]) -> None:
         """Set restart handler"""
         self._restart_handler = func
 
@@ -161,21 +175,40 @@ class Board:
 
         # Send row and column data to handler
         if not self._click_handler is None:
-            
-            # Check handler return value
-            # If return True we change color and mark
-            # Else do nothing
+
+            # Check handler whether raise GameEndedError
             try:
-                opcode = self._click_handler(row, column)
-                color = self.BLACK if opcode else self.WHITE
+                self._click_handler(row, column)
+                color = self.BLACK if self._user else self.WHITE
                 self.play(row, column, color)
-            except Exception as _error:
+            except SettedGridError as _error:
                 return
-                
-            # Change hint color
-            target = self._hinter
-            hintcolor = self.BHINT if not opcode else self.WHINT
-            self._board.itemconfig(target, fill=hintcolor)
+            except GameEndedError as _error:
+                return
+
+            # Change hint color if not mpmode
+            if not self._mpmode:
+                target = self._hinter
+                hintcolor = self.BHINT if not self._user else self.WHINT
+                self._board.itemconfig(target, fill=hintcolor)
+
+            # If not multiplayer mode change user
+            if not self._mpmode:
+                self._user = not self._user
+
+    def _restart(self) -> None:
+        """Restart game"""
+        if msg.askyesno("Confirm", "Do you really want restart this game?"):
+            self._board.destroy()
+            if not self._restart_handler is None:
+                self._restart_handler()
+
+            # Retstart handlers and board view
+            handlers = self._restart_handler, self._click_handler
+            self.__init__(self._root, self._size, self._grids,
+                          self._user, self._mpmode)
+            self._restart_handler, self._click_handler = handlers
+            self.draw()
 
     def _moving(self, position: tkinter.Event) -> None:
         """Handle moving event"""
@@ -192,7 +225,7 @@ class Board:
 
     def play(self, row: int, column: int, color: str) -> None:
         """Drop off at the specified position"""
-        _x = row  * self._unit + self.PADDING
+        _x = row * self._unit + self.PADDING
         _y = column * self._unit + self.PADDING
         radius = int(self._unit / 3.0)
         position = _x - radius, _y - radius, _x + radius, _y + radius
@@ -215,18 +248,18 @@ class Board:
         for row, column in {
             (3, 3), (self._grids - 4, self._grids - 4),
             (3, self._grids - 4), (self._grids - 4, 3),
-            (self._grids // 2, self._grids // 2)}:
-            _x = row  * self._unit + self.PADDING
+                (self._grids // 2, self._grids // 2)}:
+            _x = row * self._unit + self.PADDING
             _y = column * self._unit + self.PADDING
             positions = _x - self.LOCATINGR, _y - self.LOCATINGR, \
-                        _x + self.LOCATINGR, _y + self.LOCATINGR
+                _x + self.LOCATINGR, _y + self.LOCATINGR
             self._board.create_oval(*positions, fill=self.BLACK)
 
         # Draw outline
         self._board.create_rectangle(
-            self.PADDING - self.OUTLINEMARG, 
             self.PADDING - self.OUTLINEMARG,
-            self._size + self.PADDING + self.OUTLINEMARG, 
+            self.PADDING - self.OUTLINEMARG,
+            self._size + self.PADDING + self.OUTLINEMARG,
             self._size + self.PADDING + self.OUTLINEMARG)
 
 
@@ -247,9 +280,8 @@ if __name__ == "__main__":
             raise ValueError("Checked!")
         value += 1
         checked.add((row, column))
-        return True if value % 2 else False
 
-    board = Board(root, size, grids)
+    board = Board(root, size, grids, True, False)
     board.click = test
     board.draw()
     root.focus_get()

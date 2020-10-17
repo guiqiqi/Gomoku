@@ -4,6 +4,8 @@ Use None for unfilled, False for black, and True for white.
 The manager provides related access interfaces.
 """
 
+from settings import InvalidGridError, SettedGridError
+
 from collections import defaultdict
 from typing import List, Tuple, Union, Iterator, Set, Dict, Optional
 
@@ -21,7 +23,7 @@ class Manager:
         Parameters:
             size: int - length and width of the game board (same)
         """
-        self._turn = True
+        self._ended = False
         self._step = 0
         self._size = size
         self._board: List[List[Union[None, bool]]] = [
@@ -40,19 +42,33 @@ class Manager:
         return self._step
 
     @property
-    def turn(self) -> Union[bool, None]:
+    def turn(self) -> bool:
         """Return which turn"""
-        return self._turn
+        return self._step % 2 == 0
 
-    @turn.setter
-    def turn(self, _turn: Union[bool, None]) -> None:
-        """Set turn"""
-        self._turn = _turn
+    @property
+    def ended(self) -> bool:
+        """Return if game ended"""
+        return self._ended
+
+    def end(self) -> None:
+        """Set end flag"""
+        self._ended = True
+
+    def reset(self) -> None:
+        """Reset game status"""
+        self._step = 0
+        self._ended = False
+        self._board: List[List[Union[None, bool]]] = [
+            [None for _index in range(self._size)]
+            for _index in range(self._size)
+        ]
 
     def _around(self, _x: int, _y: int) -> Iterator[Tuple[int, int]]:
         """Return all grids's indexs around specific grid"""
         if _x >= self._size or _y >= self._size:
-            raise IndexError("Invalid index for ({x}, {y})".format(x=_x, y=_y))
+            raise InvalidGridError(
+                "Invalid index for ({x}, {y})".format(x=_x, y=_y))
 
         for i in (_x - 1, _x, _x + 1):
             for j in (_y - 1, _y, _y + 1):
@@ -132,11 +148,13 @@ class Manager:
         """Set status for specific index of grid"""
         _x, _y = index
         if _x > self._size or _x < 0 or _y > self._size or _y < 0:
-            raise IndexError("Invalid index for ({x}, {y})".format(x=_x, y=_y))
+            raise InvalidGridError(
+                "Invalid index for ({x}, {y})".format(x=_x, y=_y))
 
         # Check for grid if grid has been set
         if isinstance(self._board[_x][_y], bool) and not value is None:
-            raise ValueError("Cannot set grid which has already been set")
+            raise SettedGridError("Cannot set grid which has already been set")
+
         self._board[_x][_y] = value
         self._step += 1
 
@@ -187,7 +205,7 @@ if __name__ == "__main__":
     assert(manager[0, 1] == None)
     try:
         manager[0, 0] = False
-    except ValueError as _error:
+    except SettedGridError as _error:
         pass
     else:
         raise AssertionError("Setitem function test failed!")
