@@ -101,9 +101,9 @@ class Manager:
             paths = {1: set(), 2: set(), 3: set(), 4: set()}
 
         # Check if already some direction has already find enough
-        for index in range(1, 5):
-            if len(paths[index]) == self.VJC:
-                return paths
+        # for index in range(1, 5):
+        #     if len(paths[index]) == self.VJC:
+        #         return paths
 
         # Find all grids aorund current one
         around = self._around(row, column)
