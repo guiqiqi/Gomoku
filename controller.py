@@ -1,5 +1,5 @@
 """
-Game mode:
+Game mode - controller:
     Game - Abstract Game Class
     SingleGame - LocalSingleGame
 """
@@ -70,8 +70,8 @@ class SingleGame(Game):
         search = self._game.find(row, column)
         for _, pieces in search.items():
             if len(pieces) == self._game.VJC:
-                user = self._players[current]
-                self._board.win(user, current, pieces)
+                player = self._players[current]
+                self._board.win(player, current, pieces)
                 self._game.end()
                 raise GameEndedError("{username} has won game!".format(
-                    username=str(user)))
+                    username=str(player)))

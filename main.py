@@ -2,7 +2,7 @@
 
 from settings import BLACK, WHITE
 from player import Player
-from game import SingleGame
+from controller import SingleGame
 
 
 players = {
