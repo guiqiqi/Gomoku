@@ -9,7 +9,7 @@ from settings import GameEndedError, SettedGridError, ViewSettings, GameSettingE
 
 import tkinter
 import tkinter.messagebox as msg
-from typing import Callable, Iterable, Tuple, Union
+from typing import Callable, Dict, Iterable, Tuple, Union
 
 
 class Board:
@@ -63,7 +63,7 @@ class Board:
 
         # Patch for invalid size and grids
         self._root = root
-        self._root.resizable(False, False)
+        # self._root.resizable(False, False)
         self._root.title(self.TITLE)
         self._grids, self._size = grids, size
         if self._size % (grids - 1) != 0:
@@ -96,23 +96,30 @@ class Board:
 
         # Initial menubar
         menubar = tkinter.Menu(self._root)
-        about = tkinter.Menu(menubar)
+        other = tkinter.Menu(menubar)
+
         controller = tkinter.Menu(menubar)
         menubar.add_cascade(label="Game", menu=controller)
-        menubar.add_cascade(label="About", menu=about)
+        menubar.add_cascade(label="Other", menu=other)
 
-        controller.add_command(label="New Game",
-                               command=self._restart_handler)
+        # TODO: New Game selection bar
+        controller.add_command(label="New Game")
         controller.add_command(label="Restart Game", command=self._restart)
         controller.add_separator()
         controller.add_command(label="Exit Game", command=self._exit)
 
-        about.add_command(label="Help", command=self._help)
-        about.add_command(label="About", command=self._about)
+        # TODO: Add statistics
+        other.add_command(label="Statistics")
+        other.add_separator()
+        other.add_command(label="Help", command=self._help)
+        other.add_command(label="About", command=self._about)
         root.configure(menu=menubar)
 
         # Configure icon
         root.iconbitmap(self.ICONMAP)
+
+        # Record pieces
+        self._pieces: Dict[Tuple[int, int], int] = dict()
 
     @staticmethod
     def _help() -> None:
@@ -129,15 +136,24 @@ class Board:
         """Show about info"""
         msg.showinfo("About", (
             "This is a simple Gomoku.\n"
-            "Wish you a happy game!"
+            "Wish you a happy game!\n"
+            "Author: guiqiqi187@gmail.com"
         ))
 
     def win(self, who: Player, turn: bool, pieces: Iterable[Tuple[int, int]]) -> None:
         """Show congratulations"""
         # Pieces to mark the winning side.
         for row, column in pieces:
+            piece = self._pieces.get((row, column), None)
             color = self.WWIN if not turn else self.BWIN
-            self.play(row, column, color)
+
+            # Play win mark color for last piece
+            if piece is None:
+                self.play(row, column, color)
+                continue
+            
+            # Draw other pieces
+            self._board.itemconfig(piece, fill=color)
 
         msg.showinfo("Congratulations",
                      "{player} win!".format(player=str(who)))
@@ -220,8 +236,9 @@ class Board:
 
     def _exit(self) -> None:
         """Destory window and exit game"""
-        self._root.destroy()
-        __import__("sys").exit(0)
+        if msg.askyesno("Confirm", "Do you really want exit this game?"):
+            self._root.destroy()
+            __import__("sys").exit(0)
 
     def play(self, row: int, column: int, color: str) -> None:
         """Drop off at the specified position"""
@@ -229,7 +246,8 @@ class Board:
         _y = column * self._unit + self.PADDING
         radius = int(self._unit / 3.0)
         position = _x - radius, _y - radius, _x + radius, _y + radius
-        self._board.create_oval(*position, fill=color, outline="")
+        piece = self._board.create_oval(*position, fill=color, outline="")
+        self._pieces[(row, column)] = piece
 
     def draw(self) -> None:
         """Draw vertical and horizontal lines as the game board"""
