@@ -6,8 +6,8 @@ from controller import SingleGame
 
 
 players = {
-    BLACK: Player("Doge"),
-    WHITE: Player("Meow")
+    BLACK: Player("Doge", color=BLACK),
+    WHITE: Player("Meow", color=WHITE)
 }
 
 game = SingleGame(15, 600, players)
