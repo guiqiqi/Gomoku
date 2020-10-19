@@ -7,7 +7,7 @@ Game mode - controller:
 from view import Board
 from model import Manager
 from player import Player
-from settings import GameEndedError
+from settings import GameEndedError, GameTiedError, GameWonError
 
 import tkinter
 from typing import Dict, abstractmethod
@@ -71,7 +71,5 @@ class SingleGame(Game):
         for _, pieces in search.items():
             if len(pieces) == self._game.VJC:
                 player = self._players[current]
-                self._board.win(player, current, pieces)
                 self._game.end()
-                raise GameEndedError("{username} has won game!".format(
-                    username=str(player)))
+                raise GameWonError(player, pieces)

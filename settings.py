@@ -3,6 +3,10 @@ Game settings and Error definition
 """
 
 
+from typing import Iterable, List, Tuple
+from player import Player
+
+
 BLACK = True  # Black Player
 WHITE = False  # White Player
 
@@ -41,5 +45,18 @@ class SettedGridError(GameError):
     """Cannot set Grid has been set"""
 
 
+class GameWonError(GameError):
+    """Game won"""
+
+    def __init__(self, player: Player, pieces: Iterable[Tuple[int, int]]) -> None:
+        """Initialize this error"""
+        self.player: Player = player
+        self.pieces: Iterable[Tuple[int, int]] = pieces
+
+
 class GameEndedError(GameError):
     """Raise when game has already ended"""
+
+
+class GameTiedError(GameError):
+    """Game tied"""

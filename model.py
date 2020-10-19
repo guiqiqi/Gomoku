@@ -4,7 +4,7 @@ Use None for unfilled, False for black, and True for white.
 The manager provides related access interfaces.
 """
 
-from settings import InvalidGridError, SettedGridError
+from settings import GameTiedError, InvalidGridError, SettedGridError
 
 from collections import defaultdict
 from typing import List, Tuple, Union, Iterator, Set, Dict, Optional
@@ -24,8 +24,8 @@ class Manager:
             size: int - length and width of the game board (same)
         """
         self._ended = False
-        self._step = 0
         self._size = size
+        self._records: List[Tuple[int, int]] = list()
         self._board: List[List[Union[None, bool]]] = [
             [None for _index in range(size)]
             for _index in range(size)
@@ -37,14 +37,14 @@ class Manager:
         return self._size
 
     @property
-    def step(self) -> int:
-        """Return step count"""
-        return self._step
+    def steps(self) -> int:
+        """Return steps count"""
+        return len(self._records)
 
     @property
     def turn(self) -> bool:
         """Return which turn"""
-        return self._step % 2 == 0
+        return len(self._records) % 2 == 0
 
     @property
     def ended(self) -> bool:
@@ -57,7 +57,7 @@ class Manager:
 
     def reset(self) -> None:
         """Reset game status"""
-        self._step = 0
+        self._records.clear()
         self._ended = False
         self._board: List[List[Union[None, bool]]] = [
             [None for _index in range(self._size)]
@@ -156,7 +156,11 @@ class Manager:
             raise SettedGridError("Cannot set grid which has already been set")
 
         self._board[_x][_y] = value
-        self._step += 1
+        self._records.append(index)
+
+        # Check if all grids has been set
+        if self.steps == self._size ** 2:
+            raise GameTiedError("Game has already tied")
 
     def __getitem__(self, index: Tuple[int, int]) -> Union[None, bool]:
         """Return status for specific index of grid"""
@@ -211,7 +215,7 @@ if __name__ == "__main__":
         raise AssertionError("Setitem function test failed!")
 
     # Test step count function
-    assert(manager.step == 1)
+    assert(manager.steps == 1)
 
     # Test find function
     manager[0, 1] = True
