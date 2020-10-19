@@ -10,17 +10,16 @@ from player import Player
 from settings import GameEndedError, GameTiedError, GameWonError
 
 import tkinter
-from typing import Dict, abstractmethod
+from typing import Dict, Tuple, abstractmethod
 
 
 class Game:
     """Gaming Abstract model"""
 
     def __init__(self, grids: int, size: int,
-                 players: Dict[bool, Player],
+                 players: Tuple[Player, Player],
                  sente: bool, mpmode: bool) -> None:
         """Initial a new Game"""
-        self._players = players
         self._tkroot = tkinter.Tk()
         self._game = Manager(grids)
         self._size, self._grids = size, grids
@@ -29,6 +28,11 @@ class Game:
             self._grids, sente, mpmode)
         self._board.click = self.click
         self._board.restart = self.restart
+
+        # Bind players
+        self._players: Dict[bool, Player] = dict()
+        for player in players:
+            self._players[bool(player)] = player
 
     @abstractmethod
     def click(self, row: int, column: int) -> None:
@@ -48,7 +52,7 @@ class SingleGame(Game):
     """Single game mode"""
 
     def __init__(self, grids: int, size: int,
-                 players: Dict[bool, Player]) -> None:
+                 players: Tuple[Player, Player]) -> None:
         """Initialize a Single game"""
         super().__init__(grids, size, players,
                          sente=True, mpmode=False)
