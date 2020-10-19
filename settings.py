@@ -3,7 +3,7 @@ Game settings and Error definition
 """
 
 
-from typing import Iterable, List, Tuple
+from typing import Iterable, Tuple
 from player import Player
 
 

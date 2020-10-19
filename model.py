@@ -4,7 +4,7 @@ Use None for unfilled, False for black, and True for white.
 The manager provides related access interfaces.
 """
 
-from settings import GameTiedError, InvalidGridError, SettedGridError
+from settings import InvalidGridError, SettedGridError
 
 from collections import defaultdict
 from typing import List, Tuple, Union, Iterator, Set, Dict, Optional
@@ -99,11 +99,6 @@ class Manager:
         target = self[row, column]
         if paths is None:
             paths = {1: set(), 2: set(), 3: set(), 4: set()}
-
-        # Check if already some direction has already find enough
-        # for index in range(1, 5):
-        #     if len(paths[index]) == self.VJC:
-        #         return paths
 
         # Find all grids aorund current one
         around = self._around(row, column)
