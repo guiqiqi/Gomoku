@@ -158,10 +158,6 @@ class Manager:
         self._board[_x][_y] = value
         self._records.append(index)
 
-        # Check if all grids has been set
-        if self.steps == self._size ** 2:
-            raise GameTiedError("Game has already tied")
-
     def __getitem__(self, index: Tuple[int, int]) -> Union[None, bool]:
         """Return status for specific index of grid"""
         _x, _y = index

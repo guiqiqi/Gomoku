@@ -66,10 +66,14 @@ class SingleGame(Game):
         current = self._game.turn
         self._game[row, column] = current
 
-        # Check win
+        # Check Win
         search = self._game.find(row, column)
         for _, pieces in search.items():
             if len(pieces) == self._game.VJC:
                 player = self._players[current]
                 self._game.end()
                 raise GameWonError(player, pieces)
+
+        # Check Tie
+        if self._game.steps == self._grids ** 2:
+            raise GameTiedError("Game has already tied")

@@ -10,5 +10,5 @@ players = {
     WHITE: Player("Meow", color=WHITE)
 }
 
-game = SingleGame(15, 600, players)
+game = SingleGame(5, 600, players)
 game.start()
