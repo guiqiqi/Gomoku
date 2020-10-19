@@ -5,7 +5,7 @@ Provide a way to draw pieces
 """
 
 from player import Player
-from settings import GameEndedError, SettedGridError, ViewSettings, GameSettingError
+from settings import GameEndedError, GameTiedError, GameWonError, SettedGridError, ViewSettings, GameSettingError
 
 import tkinter
 import tkinter.messagebox as msg
@@ -140,19 +140,13 @@ class Board:
             "Author: guiqiqi187@gmail.com"
         ))
 
-    def win(self, who: Player, turn: bool, pieces: Iterable[Tuple[int, int]]) -> None:
+    def win(self, who: Player, pieces: Iterable[Tuple[int, int]]) -> None:
         """Show congratulations"""
+
         # Pieces to mark the winning side.
+        color = self.WWIN if not bool(who) else self.BWIN
         for row, column in pieces:
             piece = self._pieces.get((row, column), None)
-            color = self.WWIN if not turn else self.BWIN
-
-            # Play win mark color for last piece
-            if piece is None:
-                self.play(row, column, color)
-                continue
-            
-            # Draw other pieces
             self._board.itemconfig(piece, fill=color)
 
         msg.showinfo("Congratulations",
@@ -193,13 +187,20 @@ class Board:
         if not self._click_handler is None:
 
             # Check handler whether raise GameEndedError
+            color = self.BLACK if self._user else self.WHITE
             try:
                 self._click_handler(row, column)
-                color = self.BLACK if self._user else self.WHITE
                 self.play(row, column, color)
             except SettedGridError as _error:
                 return
             except GameEndedError as _error:
+                return
+            except GameWonError as error:
+                self.play(row, column, color)
+                self.win(error.player, error.pieces)
+            except GameTiedError as _error:
+                self.play(row, column, color)
+                msg.showinfo("Info", "Game has already tied!")
                 return
 
             # Change hint color if not mpmode
