@@ -4,8 +4,6 @@ Game settings and Error definition
 
 
 from typing import Iterable, Tuple
-from player import Player
-
 
 BLACK = True  # Black Player
 WHITE = False  # White Player
@@ -48,9 +46,8 @@ class SettedGridError(GameError):
 class GameWonError(GameError):
     """Game won"""
 
-    def __init__(self, player: Player, pieces: Iterable[Tuple[int, int]]) -> None:
+    def __init__(self, pieces: Iterable[Tuple[int, int]]) -> None:
         """Initialize this error"""
-        self.player: Player = player
         self.pieces: Iterable[Tuple[int, int]] = pieces
 
 
