@@ -109,6 +109,10 @@ class Manager:
             if not self[nrow, ncolumn] == target:
                 continue
 
+            # Filter non-set grid
+            if self[nrow, ncolumn] == None:
+                continue
+
             # Define direction
             if (nrow - row) * (ncolumn - column) == 1:
                 classified[1].append((nrow, ncolumn))
