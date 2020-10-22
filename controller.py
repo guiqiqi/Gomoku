@@ -62,6 +62,8 @@ class Game:
     def restart(self) -> None:
         """Restart handler function"""
         self._game.reset()
+        self._curplayer = self._players[True]
+        self.player.active()
 
     def gaming(self) -> None:
         """Game logistic"""

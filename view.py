@@ -198,14 +198,15 @@ class Board:
         """Restart game"""
         if msgbox.askyesno("Confirm", "Do you really want restart this game?"):
             self._board.destroy()
-            if not self._restart_handler is None:
-                self._restart_handler()
 
             # Retstart handlers and board view
             handlers = self._restart_handler, self._click_handler
             self.__init__(self._root, self._size, self._grids)
             self._restart_handler, self._click_handler = handlers
             self.draw()
+
+            if not self._restart_handler is None:
+                self._restart_handler()
 
     def _moving(self, position: tkinter.Event) -> None:
         """Handle moving event"""
