@@ -4,22 +4,24 @@ Game mode - controller:
     SingleGame - LocalSingleGame
 """
 
-from abc import abstractmethod
-from view import Board
-from model import Manager
-from player import Player, LocalPlayer
-from settings import GameEndedError, GameTiedError, GameWonError, SettedGridError
-
 import tkinter
+from abc import abstractmethod
 from threading import Thread
 from typing import Dict
+
+from rules import Rule, GameWon, InvalidPosition, SwapRequest
+from model import Manager
+from player import LocalPlayer, Player
+import rules
+from settings import GameEndedError, GameWonError, SettedGridError
+from view import Board
 
 
 class Game:
     """Gaming Abstract model"""
 
     def __init__(self, grids: int, size: int,
-                 players: Dict[bool, str]) -> None:
+                 players: Dict[bool, str], rule: Rule) -> None:
         """Initial a new Game"""
         self._tkroot = tkinter.Tk()
         self._game = Manager(grids)
@@ -28,6 +30,7 @@ class Game:
         # Make players
         self._curplayer: Player
         self._players: Dict[bool, Player] = dict()
+        self._rule = rule
 
     @property
     def player(self) -> Player:
@@ -45,19 +48,33 @@ class Game:
         if self._game.ended:
             raise GameEndedError("Game has already ended!")
 
-        # Play piece
+        # Play piece for looking winner
+        # If rule said is invalid, cancel this operation
         self._game[row, column] = bool(self.player)
+        situation = self._game.find(row, column)
+
+        # Check rule
+        try:
+            self._rule((row, column), self._game.steps, situation)
+        except GameWon as error:
+            self._game.end()
+            raise GameWonError(error.pieces)
+        except InvalidPosition as error:
+            self._game[row, column] = None
+            self.player.announce(error.title, error.msg)
+        except SwapRequest as error:
+            options = error.options
 
         # Check Win
-        search = self._game.find(row, column)
-        for _, pieces in search.items():
-            if len(pieces) == self._game.VJC:
-                self._game.end()
-                raise GameWonError(pieces)
+        # 
+        # for _, pieces in search.items():
+        #     if len(pieces) == self._game.VJC:
+        #         self._game.end()
+        #         raise GameWonError(pieces)
 
-        # Check Tie
-        if self._game.steps == self._grids ** 2:
-            raise GameTiedError("Game has already tied")
+        # Check Tie - dont check tie for now
+        # if self._game.steps == self._grids ** 2:
+        #     raise GameTiedError("Game has already tied")
 
     def restart(self) -> None:
         """Restart handler function"""
@@ -79,9 +96,6 @@ class Game:
                 self.player.play(row, column)
                 self.player.win(error.pieces)
                 break
-            except GameTiedError:
-                self.player.tie()
-                break
             self.player.play(row, column)
             self.toggle()
 
@@ -97,9 +111,9 @@ class LocalGame(Game):
     """LocalGame"""
 
     def __init__(self, grids: int, size: int,
-                 players: Dict[bool, str]) -> None:
+                 players: Dict[bool, str], rule: Rule) -> None:
         """Initlize a new local game"""
-        super().__init__(grids, size, players)
+        super().__init__(grids, size, players, rule)
 
         # Initialize tkUI
         self._board = Board(self._tkroot, self._size, self._grids)

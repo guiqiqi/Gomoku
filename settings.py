@@ -54,6 +54,3 @@ class GameWonError(GameError):
 class GameEndedError(GameError):
     """Raise when game has already ended"""
 
-
-class GameTiedError(GameError):
-    """Game tied"""
