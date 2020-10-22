@@ -4,11 +4,10 @@ Use Tkinter and Canvas to draw interface
 Provide a way to draw pieces
 """
 
-from player import Player
-from settings import GameEndedError, GameTiedError, GameWonError, SettedGridError, ViewSettings, GameSettingError
+from settings import ViewSettings, GameSettingError
 
 import tkinter
-import tkinter.messagebox as msg
+import tkinter.messagebox as msgbox
 from typing import Callable, Dict, Iterable, Tuple, Union
 
 
@@ -41,8 +40,7 @@ class Board:
     LOCATINGR = 5  # Radius of location point
     OUTLINEMARG = 3  # Pixels margin of outline
 
-    def __init__(self, root: tkinter.Tk, size: int,
-                 grids: int, user: bool, mpmode: bool) -> None:
+    def __init__(self, root: tkinter.Tk, size: int, grids: int) -> None:
         """
         Instantiate a new game board object.
         Draw on the given parent Tk object.
@@ -91,8 +89,6 @@ class Board:
         # Handle left key function
         self._click_handler = None
         self._restart_handler = None
-        self._mpmode = mpmode
-        self._user = user
 
         # Initial menubar
         menubar = tkinter.Menu(self._root)
@@ -124,7 +120,7 @@ class Board:
     @staticmethod
     def _help() -> None:
         """Show help dialog"""
-        msg.showinfo("Help", (
+        msgbox.showinfo("Help", (
             "Please choose the appropriate location.\n"
             "The color of the chess piece following the "
             "prompt of the mouse is the color of the "
@@ -134,13 +130,13 @@ class Board:
     @staticmethod
     def _about() -> None:
         """Show about info"""
-        msg.showinfo("About", (
+        msgbox.showinfo("About", (
             "This is a simple Gomoku.\n"
             "Wish you a happy game!\n"
             "Author: guiqiqi187@gmail.com"
         ))
 
-    def win(self, who: Player, pieces: Iterable[Tuple[int, int]]) -> None:
+    def win(self, who, pieces: Iterable[Tuple[int, int]]) -> None:
         """Show congratulations"""
 
         # Pieces to mark the winning side.
@@ -149,7 +145,7 @@ class Board:
             piece = self._pieces.get((row, column), None)
             self._board.itemconfig(piece, fill=color)
 
-        msg.showinfo("Congratulations",
+        msgbox.showinfo("Congratulations",
                      "{player} win!".format(player=str(who)))
 
     @property
@@ -185,45 +181,29 @@ class Board:
 
         # Send row and column data to handler
         if not self._click_handler is None:
+            self._click_handler(row, column)
 
-            # Check handler whether raise GameEndedError
-            color = self.BLACK if self._user else self.WHITE
-            try:
-                self._click_handler(row, column)
-                self.play(row, column, color)
-            except SettedGridError as _error:
-                return
-            except GameEndedError as _error:
-                return
-            except GameWonError as error:
-                self.play(row, column, color)
-                self.win(error.player, error.pieces)
-            except GameTiedError as _error:
-                self.play(row, column, color)
-                msg.showinfo("Info", "Game has already tied!")
-                return
+    @staticmethod
+    def showmsg(title, msg) -> None:
+        """Show message"""
+        msgbox.showinfo(title, msg)
 
-            # Change hint color if not mpmode
-            if not self._mpmode:
-                target = self._hinter
-                hintcolor = self.BHINT if not self._user else self.WHINT
-                self._board.itemconfig(target, fill=hintcolor)
-
-            # If not multiplayer mode change user
-            if not self._mpmode:
-                self._user = not self._user
+    def hint(self, color: bool) -> None:
+        """Toogle hint color to specific one"""
+        target = self._hinter
+        hintcolor = self.BHINT if color else self.WHINT
+        self._board.itemconfig(target, fill=hintcolor)
 
     def _restart(self) -> None:
         """Restart game"""
-        if msg.askyesno("Confirm", "Do you really want restart this game?"):
+        if msgbox.askyesno("Confirm", "Do you really want restart this game?"):
             self._board.destroy()
             if not self._restart_handler is None:
                 self._restart_handler()
 
             # Retstart handlers and board view
             handlers = self._restart_handler, self._click_handler
-            self.__init__(self._root, self._size, self._grids,
-                          self._user, self._mpmode)
+            self.__init__(self._root, self._size, self._grids)
             self._restart_handler, self._click_handler = handlers
             self.draw()
 
@@ -237,17 +217,23 @@ class Board:
 
     def _exit(self) -> None:
         """Destory window and exit game"""
-        if msg.askyesno("Confirm", "Do you really want exit this game?"):
+        if msgbox.askyesno("Confirm", "Do you really want exit this game?"):
             self._root.destroy()
             __import__("sys").exit(0)
 
-    def play(self, row: int, column: int, color: str) -> None:
+    def play(self, row: int, column: int, color: bool) -> None:
         """Drop off at the specified position"""
+        # Calc fillcolor
+        fillcolor = self.BLACK if color else self.WHITE
+
+        # Position and radius calculation
         _x = row * self._unit + self.PADDING
         _y = column * self._unit + self.PADDING
         radius = int(self._unit / 3.0)
         position = _x - radius, _y - radius, _x + radius, _y + radius
-        piece = self._board.create_oval(*position, fill=color, outline="")
+
+        # Create canvas oval
+        piece = self._board.create_oval(*position, fill=fillcolor, outline="")
         self._pieces[(row, column)] = piece
 
     def draw(self) -> None:
@@ -300,7 +286,7 @@ if __name__ == "__main__":
         value += 1
         checked.add((row, column))
 
-    board = Board(root, size, grids, True, False)
+    board = Board(root, size, grids)
     board.click = test
     board.draw()
     root.focus_get()
