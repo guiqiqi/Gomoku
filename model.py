@@ -15,7 +15,6 @@ class Manager:
     Game data manager
     Use a two-dimensional array matrix to represent the game board.
     """
-    VJC: int = 5  # Victory Judgment Conditions
 
     def __init__(self, size: int) -> None:
         """
@@ -155,7 +154,10 @@ class Manager:
             raise SettedGridError("Cannot set grid which has already been set")
 
         self._board[_x][_y] = value
-        self._records.append(index)
+        if value is None:
+            self._records.remove(index)
+        else:
+            self._records.append(index)
 
     def __getitem__(self, index: Tuple[int, int]) -> Union[None, bool]:
         """Return status for specific index of grid"""

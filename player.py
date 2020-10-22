@@ -54,8 +54,13 @@ class Player:
         ...
 
     @abstractmethod
-    def tie(self) -> None:
-        """Game tied"""
+    def undo(self, row: int, column: int) -> None:
+        """Undo piece"""
+        ...
+
+    @abstractmethod
+    def announce(self, title: str, msg: str) -> None:
+        """Announce info to player"""
         ...
 
 
@@ -76,12 +81,15 @@ class LocalPlayer(Player):
         self._board.click = self.handler
         self._board.hint(bool(self))
 
+    def undo(self, row: int, column: int) -> None:
+        """Undo board canvas drawing"""
+        self._board.undo(row, column)
+
     def win(self, pieces: Iterable[Tuple[int, int]]) -> None:
         """This player win game"""
         self._board.click = None
         self._board.win(self, pieces)
 
-    def tie(self) -> None:
-        """Game tied"""
-        self._board.click = None
-        self._board.showmsg("Info", "Game tied!")
+    def announce(self, title: str, msg: str) -> None:
+        """Show info in tkinter"""
+        self._board.showmsg(title, msg)

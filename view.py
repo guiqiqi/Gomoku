@@ -234,8 +234,16 @@ class Board:
         position = _x - radius, _y - radius, _x + radius, _y + radius
 
         # Create canvas oval
+        if (row, column) in self._pieces:
+            return
         piece = self._board.create_oval(*position, fill=fillcolor, outline="")
         self._pieces[(row, column)] = piece
+
+    def undo(self, row: int, column: int) -> None:
+        """Undo canvas draw"""
+        piece = self._pieces.get((row, column), None)
+        if piece:
+            self._board.delete(piece)
 
     def draw(self) -> None:
         """Draw vertical and horizontal lines as the game board"""
