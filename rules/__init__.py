@@ -8,3 +8,4 @@ from .rule import (
 )
 
 from .freestyle import FreeStyle
+from .standard import Standard

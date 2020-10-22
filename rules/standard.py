@@ -3,8 +3,8 @@
 from .rule import Rule, GameWon
 from typing import List, Tuple, Dict
 
-class FreeStyle(Rule):
-    """Free Style"""
+class Standard(Rule):
+    """Standard Gomoku"""
     VJC = 5
 
     def __call__(self, position: Tuple[int, int], step: int,
