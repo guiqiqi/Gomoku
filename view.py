@@ -4,11 +4,13 @@ Use Tkinter and Canvas to draw interface
 Provide a way to draw pieces
 """
 
+from core.algorithm import transpose
 from settings import ViewSettings, GameSettingError
 
 import tkinter
+from tkinter import ttk
 import tkinter.messagebox as msgbox
-from typing import Callable, Dict, Iterable, Tuple, Union
+from typing import Callable, Dict, Iterable, List, Tuple, Union
 
 
 class Board:
@@ -275,6 +277,47 @@ class Board:
             self.PADDING - self.OUTLINEMARG,
             self._size + self.PADDING + self.OUTLINEMARG,
             self._size + self.PADDING + self.OUTLINEMARG)
+
+    def selpanel(self, options: Dict[Tuple[str, ...], Callable], labels: Tuple[str, ...]):
+        """
+        Draw a selection panel:
+        options is callback vectors, which options is key of Dict:
+        {
+            ("Local", "FreeStyle"): Callback,
+            ("Internet", "FreeStyle"): Callback,
+            ("AI", "FreeStyle"): Callback,
+            ...
+        },
+        which label assigned to layer index of options.keys():
+        [
+            "Game Type", "Rule"
+        ]
+        """
+        toplevel = tkinter.Toplevel(self._root)
+        layers = transpose(options.keys())
+        combos: List[ttk.Combobox] = list()
+        for index, layer in enumerate(layers):
+            combo = ttk.Combobox(toplevel, values=list(set(layer)))
+            ttk.Label(toplevel, text=labels[index]).grid(
+                column=0, row=index)
+            combo.grid(column=1, row=index)
+            combo.current(0)
+            combos.append(combo)
+        
+        def select():
+            """Check selection"""
+            selection: List[str] = list()
+            for combo in combos:
+                selection.append(combo.get())
+            callback = options.get(tuple(selection), None)
+            if callable(callback):
+                toplevel.destroy()
+                callback()
+            
+        ttk.Button(toplevel, text="Confirm", command=select).grid(
+            column=0, columnspan=2, row=len(layers))
+        toplevel.resizable(False, False)
+        return toplevel
 
 
 # Test game viewing
