@@ -62,8 +62,10 @@ class Game:
         except InvalidPosition as error:
             self._game[row, column] = None
             self.player.announce(error.title, error.msg)
+            return
         except SwapRequest as error:
             options = error.options
+            pass
 
         # Check Win
         # 
@@ -137,6 +139,14 @@ class LocalGame(Game):
         thread.setDaemon(True)
         thread.setName("Gaming")
         thread.start()
+
+        # Select panel test
+        # self._board.selpanel({
+        #     ("Local - Person", "Free Style", "No"): lambda: print(1),
+        #     ("Local - AI", "Free Style", "Yes"): lambda: print(2),
+        #     ("Local - Person", "Free Style", "Yes"): lambda: print(3),
+        #     ("Local - AI", "Free Style", "No"): lambda: print(4),
+        # }, ("Game Type", "Game Rule", "Allow Undo")).mainloop()
 
         # Mainloop
         self._tkroot.mainloop()
