@@ -63,7 +63,7 @@ class Board:
 
         # Patch for invalid size and grids
         self._root = root
-        # self._root.resizable(False, False)
+        self._root.resizable(False, False)
         self._root.title(self.TITLE)
         self._grids, self._size = grids, size
         if self._size % (grids - 1) != 0:

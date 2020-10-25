@@ -12,7 +12,6 @@ from typing import Dict
 from rules import Rule, GameWon, InvalidPosition, SwapRequest
 from model import Manager
 from player import LocalPlayer, Player
-import rules
 from settings import GameEndedError, GameWonError, SettedGridError
 from view import Board
 
@@ -64,15 +63,9 @@ class Game:
             self.player.announce(error.title, error.msg)
             return
         except SwapRequest as error:
-            options = error.options
+            # TODO: Add options callback with view.selpanel
+            # options = error.options
             pass
-
-        # Check Win
-        # 
-        # for _, pieces in search.items():
-        #     if len(pieces) == self._game.VJC:
-        #         self._game.end()
-        #         raise GameWonError(pieces)
 
         # Check Tie - dont check tie for now
         # if self._game.steps == self._grids ** 2:
