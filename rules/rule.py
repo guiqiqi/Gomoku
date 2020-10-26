@@ -1,7 +1,7 @@
 """Rule abstract class"""
 
 from abc import abstractmethod
-from typing import Callable, Iterable, Tuple, Dict
+from typing import Callable, Iterable, List, Tuple, Dict
 
 
 class RuleException(Exception):
@@ -26,7 +26,8 @@ class InvalidPosition(RuleException):
 class SwapRequest(RuleException):
     """Request swap"""
 
-    def __init__(self, callbacks: Dict[str, Callable]) -> None:
+    def __init__(self, hint: Tuple[str, ...], callbacks: Dict[str, Callable]) -> None:
+        self.hint = hint
         self.options = callbacks
 
 
@@ -42,6 +43,20 @@ class Rule:
         """
         self._swapped = False
         ...
+
+    def __repr__(self) -> str:
+        """Console entity name"""
+        return "<Rule {name}>".format(str(self))
+
+    @abstractmethod
+    def __str__(self) -> str:
+        """Return name of rule"""
+        return type(self).__name__
+
+    @staticmethod
+    def rules() -> List["Rule"]:
+        """Return all subclasses of Rule using reflection"""
+        return type(Rule).__subclasses__()
 
     @abstractmethod
     def __call__(self, position: Tuple[int, int], step: int,
