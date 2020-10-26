@@ -7,7 +7,7 @@ Game mode - controller:
 import tkinter
 from abc import abstractmethod
 from threading import Thread
-from typing import Dict
+from typing import Callable, Dict, Tuple
 
 from rules import Rule, GameWon, InvalidPosition, SwapRequest
 from model import Manager
@@ -41,6 +41,11 @@ class Game:
         self._curplayer = self._players[not bool(self._curplayer)]
         self.player.active()
 
+    @abstractmethod
+    def swap(self, request: SwapRequest) -> None:
+        """Swap player handler"""
+        ...
+
     def click(self, row: int, column: int) -> None:
         """Click handler function"""
         # Check if game already over
@@ -63,9 +68,7 @@ class Game:
             self.player.announce(error.title, error.msg)
             return
         except SwapRequest as error:
-            # TODO: Add options callback with view.selpanel
-            # options = error.options
-            pass
+            self.swap(error)
 
         # Check Tie - dont check tie for now
         # if self._game.steps == self._grids ** 2:
@@ -100,6 +103,7 @@ class Game:
     @abstractmethod
     def start(self) -> None:
         """Start game"""
+        ...
 
 
 class LocalGame(Game):
@@ -119,6 +123,18 @@ class LocalGame(Game):
         for color, name in players.items():
             self._players[color] = LocalPlayer(name, color, self._board)
 
+    def swap(self, request: SwapRequest) -> None:
+        """Swap handler for Local Game using tkinter"""
+        labels = request.hint
+        options = request.options
+        title = request.SwapSelectionPanelTitle
+
+        # Wrap all callback handlers
+        _options: Dict[Tuple[str, ...], Callable[[], None]] = dict()
+        for key, callback in options.items():
+            _options[key] = lambda: callback(self._players)
+        self._board.selpanel(title, labels, options).mainloop()
+
     def start(self) -> None:
         """Start Local Game with UI settings etc."""
 
@@ -132,14 +148,6 @@ class LocalGame(Game):
         thread.setDaemon(True)
         thread.setName("Gaming")
         thread.start()
-
-        # Select panel test
-        # self._board.selpanel({
-        #     ("Local - Person", "Free Style", "No"): lambda: print(1),
-        #     ("Local - AI", "Free Style", "Yes"): lambda: print(2),
-        #     ("Local - Person", "Free Style", "Yes"): lambda: print(3),
-        #     ("Local - AI", "Free Style", "No"): lambda: print(4),
-        # }, ("Game Type", "Game Rule", "Allow Undo")).mainloop()
 
         # Mainloop
         self._tkroot.mainloop()

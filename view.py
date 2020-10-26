@@ -280,8 +280,8 @@ class Board:
             self._size + self.PADDING + self.OUTLINEMARG,
             self._size + self.PADDING + self.OUTLINEMARG)
 
-    def selpanel(self, title: str, options: Dict[Tuple[str, ...], Callable],
-                 labels: Tuple[str, ...]) -> tkinter.Toplevel:
+    def selpanel(self, title: str, labels: Tuple[str, ...],
+                 options: Dict[Tuple[str, ...], Callable]) -> tkinter.Toplevel:
         """
         Draw a selection panel:
         options is callback vectors, which options is key of Dict:

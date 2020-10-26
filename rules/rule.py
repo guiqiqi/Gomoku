@@ -1,6 +1,7 @@
 """Rule abstract class"""
 
 from abc import abstractmethod
+from player import Player
 from typing import Callable, Iterable, List, Tuple, Dict
 
 
@@ -26,7 +27,12 @@ class InvalidPosition(RuleException):
 class SwapRequest(RuleException):
     """Request swap"""
 
-    def __init__(self, hint: Tuple[str, ...], callbacks: Dict[str, Callable]) -> None:
+    SwapSelectionPanelTitle = "Swap"
+
+    def __init__(self, hint: Tuple[str, ...],
+                 callbacks: Dict[Tuple[str, ...], Callable[
+                     [Dict[bool, Player]], None
+                 ]]) -> None:
         self.hint = hint
         self.options = callbacks
 
