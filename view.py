@@ -42,6 +42,8 @@ class Board:
     LOCATINGR = 5  # Radius of location point
     OUTLINEMARG = 3  # Pixels margin of outline
 
+    SELECT_PANEL_BGC = "#ECECEC"  # Default selection panel background color
+
     def __init__(self, root: tkinter.Tk, size: int, grids: int) -> None:
         """
         Instantiate a new game board object.
@@ -148,7 +150,7 @@ class Board:
             self._board.itemconfig(piece, fill=color)
 
         msgbox.showinfo("Congratulations",
-                     "{player} win!".format(player=str(who)))
+                        "{player} win!".format(player=str(who)))
 
     @property
     def click(self) -> Union[Callable[[int, int], None], None]:
@@ -278,7 +280,8 @@ class Board:
             self._size + self.PADDING + self.OUTLINEMARG,
             self._size + self.PADDING + self.OUTLINEMARG)
 
-    def selpanel(self, options: Dict[Tuple[str, ...], Callable], labels: Tuple[str, ...]):
+    def selpanel(self, title: str, options: Dict[Tuple[str, ...], Callable],
+                 labels: Tuple[str, ...]) -> tkinter.Toplevel:
         """
         Draw a selection panel:
         options is callback vectors, which options is key of Dict:
@@ -293,30 +296,36 @@ class Board:
             "Game Type", "Rule"
         ]
         """
-        toplevel = tkinter.Toplevel(self._root)
+        toplevel = tkinter.Toplevel(
+            self._root, background=self.SELECT_PANEL_BGC)
+        toplevel.title(title)
         layers = transpose(options.keys())
-        combos: List[ttk.Combobox] = list()
+        menus: List[Tuple[tkinter.StringVar, ttk.OptionMenu]] = list()
+
         for index, layer in enumerate(layers):
-            combo = ttk.Combobox(toplevel, values=list(set(layer)))
+            value = tkinter.StringVar(toplevel)
+            ops = list(set(layer))
+            menu = ttk.OptionMenu(toplevel, value, ops[0], *ops)
             ttk.Label(toplevel, text=labels[index]).grid(
-                column=0, row=index)
-            combo.grid(column=1, row=index)
-            combo.current(0)
-            combos.append(combo)
-        
+                column=0, row=index, padx=10)
+            menu.grid(column=1, row=index, padx=10, pady=10, sticky=tkinter.EW)
+            menus.append((value, menu))
+
         def select():
             """Check selection"""
             selection: List[str] = list()
-            for combo in combos:
-                selection.append(combo.get())
+            for value, _menu in menus:
+                selection.append(value.get())
+
             callback = options.get(tuple(selection), None)
             if callable(callback):
                 toplevel.destroy()
                 callback()
-            
+
         ttk.Button(toplevel, text="Confirm", command=select).grid(
-            column=0, columnspan=2, row=len(layers))
+            column=0, columnspan=2, row=len(layers), pady=10)
         toplevel.resizable(False, False)
+        toplevel.grab_set()
         return toplevel
 
 
