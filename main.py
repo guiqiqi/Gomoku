@@ -1,11 +1,10 @@
 """Gaming Test"""
 
-from rules import Rule, Standard
+from rules import Pro
 from settings import BLACK, WHITE
 from controller import LocalGame
 
 
-print(Rule.rules())
 players = {BLACK: "Doge", WHITE: "Meow"}
-game = LocalGame(15, 600, players, Standard())
+game = LocalGame(15, 600, players, Pro(15))
 game.start()

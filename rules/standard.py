@@ -5,7 +5,6 @@ from typing import List, Tuple, Dict
 
 class Standard(Rule):
     """Standard Gomoku"""
-    VJC = 5
 
     def __call__(self, position: Tuple[int, int], step: int,
                  situation: Dict[int, List[Tuple[int, int]]]) -> None:

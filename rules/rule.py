@@ -40,6 +40,8 @@ class SwapRequest(RuleException):
 class Rule:
     """Abstract Rule class"""
 
+    VJC = 5  # Gomoku
+
     @abstractmethod
     def __init__(self) -> None:
         """

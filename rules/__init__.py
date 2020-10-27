@@ -7,5 +7,6 @@ from .rule import (
     SwapRequest
 )
 
+from .pro import Pro
 from .freestyle import FreeStyle
 from .standard import Standard
