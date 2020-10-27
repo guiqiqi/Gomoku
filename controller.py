@@ -4,13 +4,12 @@ Game mode - controller:
     SingleGame - LocalSingleGame
 """
 
-from rules.rule import RuleException
 import tkinter
 from abc import abstractmethod
 from threading import Thread
 from typing import Callable, Dict, Tuple
 
-from rules import Rule, GameWon, InvalidPosition, SwapRequest
+from rules import Rule, GameWon, InvalidPosition, SwapRequest, RuleException
 from model import Manager
 from player import LocalPlayer, Player
 from settings import GameEndedError, GameWonError, SettedGridError
@@ -26,6 +25,7 @@ class Game:
         self._tkroot = tkinter.Tk()
         self._game = Manager(grids)
         self._size, self._grids = size, grids
+        self._pause = False
 
         # Make players
         self._curplayer: Player
@@ -36,6 +36,11 @@ class Game:
     def player(self) -> Player:
         """Return current player"""
         return self._curplayer
+
+    @property
+    def paused(self) -> bool:
+        """Return if gaming paused"""
+        return self._pause
 
     def toggle(self) -> None:
         """Toggle game player"""
@@ -71,10 +76,6 @@ class Game:
         except SwapRequest as error:
             self.swap(error)
 
-        # Check Tie - dont check tie for now
-        # if self._game.steps == self._grids ** 2:
-        #     raise GameTiedError("Game has already tied")
-
     def restart(self) -> None:
         """Restart handler function"""
         self._game.reset()
@@ -84,6 +85,11 @@ class Game:
     def gaming(self) -> None:
         """Game logistic"""
         while position := self.player.event:
+            
+            # Check if gaming paused
+            if self.paused:
+                continue
+
             row, column = position
             try:
                 self.click(row, column)
