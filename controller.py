@@ -4,6 +4,7 @@ Game mode - controller:
     SingleGame - LocalSingleGame
 """
 
+from rules.rule import RuleException
 import tkinter
 from abc import abstractmethod
 from threading import Thread
@@ -66,7 +67,7 @@ class Game:
         except InvalidPosition as error:
             self._game[row, column] = None
             self.player.announce(error.title, error.msg)
-            return
+            raise RuleException(error)
         except SwapRequest as error:
             self.swap(error)
 
@@ -90,6 +91,11 @@ class Game:
                 break
             except SettedGridError:
                 continue
+
+            # For Rule check exception dont play piece
+            except RuleException as _error:
+                continue
+
             except GameWonError as error:
                 self.player.play(row, column)
                 self.player.win(error.pieces)
