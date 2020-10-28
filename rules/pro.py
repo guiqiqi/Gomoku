@@ -1,6 +1,7 @@
 """Rule for Gomoku Pro"""
 
-from .rule import InvalidPosition, Rule, GameWon, RuleException
+from .rule import Rule
+from error import RuleException, InvalidPosition, GameWon
 from typing import List, Tuple, Dict
 
 

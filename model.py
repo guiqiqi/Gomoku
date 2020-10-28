@@ -4,8 +4,7 @@ Use None for unfilled, False for black, and True for white.
 The manager provides related access interfaces.
 """
 
-from settings import InvalidGridError, SettedGridError
-
+from error import InvalidGridError, SettedGridError
 from collections import defaultdict
 from typing import List, Tuple, Union, Iterator, Set, Dict, Optional
 

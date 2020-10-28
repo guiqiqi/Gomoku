@@ -1,6 +1,7 @@
 """Standard Gomoku"""
 
-from .rule import Rule, GameWon
+from .rule import Rule
+from error import GameWon
 from typing import List, Tuple, Dict
 
 class Standard(Rule):
