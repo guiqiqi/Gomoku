@@ -5,7 +5,8 @@ Provide a way to draw pieces
 """
 
 from core.algorithm import transpose
-from settings import ViewSettings, GameSettingError
+from error import GameSettingError
+from settings import ViewSettings
 
 import tkinter
 from tkinter import ttk
@@ -297,7 +298,7 @@ class Board:
         ]
         """
         toplevel = tkinter.Toplevel(
-            self._root, background=self.SELECT_PANEL_BGC)
+            self._root, background=self.SELECT_PANEL_BGC)       
         toplevel.title(title)
         layers = transpose(options.keys())
         menus: List[Tuple[tkinter.StringVar, ttk.OptionMenu]] = list()
@@ -319,13 +320,16 @@ class Board:
 
             callback = options.get(tuple(selection), None)
             if callable(callback):
-                toplevel.destroy()
                 callback()
+                toplevel.destroy()
 
         ttk.Button(toplevel, text="Confirm", command=select).grid(
             column=0, columnspan=2, row=len(layers), pady=10)
         toplevel.resizable(False, False)
         toplevel.grab_set()
+
+        # Disable click when not selecting
+        self._root.wait_window(toplevel)
         return toplevel
 
 
