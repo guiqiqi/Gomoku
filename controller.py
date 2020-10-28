@@ -9,11 +9,11 @@ from abc import abstractmethod
 from threading import Thread
 from typing import Callable, Dict, Tuple
 
-from rules import Rule, GameWon, InvalidPosition, SwapRequest, RuleException
+from rules import Rule
 from model import Manager
 from player import LocalPlayer, Player
-from settings import GameEndedError, GameWonError, SettedGridError
 from view import Board
+from error import SwapRequest, GameEnded, RuleException, GameWon, InvalidPosition, SettedGridError
 
 
 class Game:
@@ -25,7 +25,6 @@ class Game:
         self._tkroot = tkinter.Tk()
         self._game = Manager(grids)
         self._size, self._grids = size, grids
-        self._pause = False
 
         # Make players
         self._curplayer: Player
@@ -37,10 +36,10 @@ class Game:
         """Return current player"""
         return self._curplayer
 
-    @property
-    def paused(self) -> bool:
-        """Return if gaming paused"""
-        return self._pause
+    # @property
+    # def paused(self) -> bool:
+    #     """Return if gaming paused"""
+    #     return self._pause
 
     def toggle(self) -> None:
         """Toggle game player"""
@@ -56,7 +55,7 @@ class Game:
         """Click handler function"""
         # Check if game already over
         if self._game.ended:
-            raise GameEndedError("Game has already ended!")
+            raise GameEnded("Game has already ended!")
 
         # Play piece for looking winner
         # If rule said is invalid, cancel this operation
@@ -68,13 +67,13 @@ class Game:
             self._rule((row, column), self._game.steps, situation)
         except GameWon as error:
             self._game.end()
-            raise GameWonError(error.pieces)
+            raise
         except InvalidPosition as error:
             self._game[row, column] = None
             self.player.announce(error.title, error.msg)
-            raise RuleException(error)
+            raise
         except SwapRequest as error:
-            self.swap(error)
+            raise
 
     def restart(self) -> None:
         """Restart handler function"""
@@ -85,27 +84,31 @@ class Game:
     def gaming(self) -> None:
         """Game logistic"""
         while position := self.player.event:
-            
-            # Check if gaming paused
-            if self.paused:
-                continue
 
             row, column = position
             try:
                 self.click(row, column)
-            except GameEndedError:
+            except GameEnded:
                 break
             except SettedGridError:
                 continue
 
-            # For Rule check exception dont play piece
-            except RuleException as _error:
-                continue
-
-            except GameWonError as error:
+            except GameWon as error:
                 self.player.play(row, column)
                 self.player.win(error.pieces)
                 break
+
+            # When player swapping dont change
+            except SwapRequest as request:
+                self.player.play(row, column)
+                self.swap(request)
+                self.toggle()
+                continue
+
+            # For General Rule check exception dont play piece
+            except RuleException as _error:
+                continue
+
             self.player.play(row, column)
             self.toggle()
 
@@ -143,9 +146,9 @@ class LocalGame(Game):
 
         # Wrap all callback handlers
         _options: Dict[Tuple[str, ...], Callable[[], None]] = dict()
-        for key, callback in options.items():
-            _options[key] = lambda: callback(self._players)
-        self._board.selpanel(title, labels, options).mainloop()
+        for key in options:
+            _options[key] = lambda func=options[key]: func(self._players)
+        self._board.selpanel(title, labels, _options)
 
     def start(self) -> None:
         """Start Local Game with UI settings etc."""
