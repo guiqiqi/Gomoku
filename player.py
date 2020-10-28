@@ -19,7 +19,7 @@ class Player:
         self._name = name
         self._event: "Queue[Tuple[int, int]]" = Queue(maxsize=1)
 
-    def handler(self, row, column):
+    def handler(self, row, column) -> None:
         """Set click event bounding to click function"""
         if not self._event.empty():
             self._event.get_nowait()
@@ -33,6 +33,11 @@ class Player:
     def __str__(self) -> str:
         """Return username"""
         return self._name
+
+    def __repr__(self) -> str:
+        """Return player info"""
+        return "<Player {name} with {color}>".format(
+            name=self._name, color="Black" if self._color else "White")
 
     def __bool__(self) -> bool:
         """Return color"""
@@ -74,7 +79,6 @@ class LocalPlayer(Player):
     def play(self, row: int, column: int) -> None:
         """Play piece using Board UI function"""
         self._board.play(row, column, bool(self))
-        self._board.hint(not bool(self))
 
     def active(self) -> None:
         """Set active state as current player"""
