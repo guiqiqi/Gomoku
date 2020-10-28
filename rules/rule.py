@@ -1,40 +1,7 @@
 """Rule abstract class"""
 
 from abc import abstractmethod
-from player import Player
-from typing import Callable, Iterable, List, Tuple, Dict, Type
-
-
-class RuleException(Exception):
-    """Basic Rule Exception"""
-
-
-class GameWon(RuleException):
-    """Game Won by curret player"""
-
-    def __init__(self, pieces: Iterable[Tuple[int, int]]) -> None:
-        self.pieces = pieces
-
-
-class InvalidPosition(RuleException):
-    """Invalid position played"""
-
-    def __init__(self, title: str, msg: str) -> None:
-        self.title = title
-        self.msg = msg
-
-
-class SwapRequest(RuleException):
-    """Request swap"""
-
-    SwapSelectionPanelTitle = "Swap"
-
-    def __init__(self, hint: Tuple[str, ...],
-                 callbacks: Dict[Tuple[str, ...], Callable[
-                     [Dict[bool, Player]], None
-                 ]]) -> None:
-        self.hint = hint
-        self.options = callbacks
+from typing import Iterable, List, Tuple, Dict, Type
 
 
 class Rule:
@@ -54,7 +21,7 @@ class Rule:
 
     def __repr__(self) -> str:
         """Console entity name"""
-        return "<Rule {name}>".format(str(self))
+        return "<Rule {name}>".format(name=str(self))
 
     def __str__(self) -> str:
         """Return name of rule"""

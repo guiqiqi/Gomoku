@@ -2,12 +2,10 @@
 Game settings and Error definition
 """
 
-
 from typing import Iterable, Tuple
 
 BLACK = True  # Black Player
 WHITE = False  # White Player
-
 
 class ViewSettings:
     """Game View settings"""
@@ -25,32 +23,3 @@ class ViewSettings:
     BGCOLOR = "#FEBE0B"  # Background color for game board
     BHINT = "#333333"  # Black hinter
     WHINT = "#F0F0F0"  # White hinter
-
-
-class GameError(Exception):
-    """General game error"""
-
-
-class GameSettingError(Exception):
-    """Error occured during initialization"""
-
-
-class InvalidGridError(GameError):
-    """Invalid piece index"""
-
-
-class SettedGridError(GameError):
-    """Cannot set Grid has been set"""
-
-
-class GameWonError(GameError):
-    """Game won"""
-
-    def __init__(self, pieces: Iterable[Tuple[int, int]]) -> None:
-        """Initialize this error"""
-        self.pieces: Iterable[Tuple[int, int]] = pieces
-
-
-class GameEndedError(GameError):
-    """Raise when game has already ended"""
-
