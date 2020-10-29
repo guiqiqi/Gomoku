@@ -30,7 +30,7 @@ class SwapRequest(RuleException):
 
     def __init__(self, hint: Tuple[str, ...],
                  callbacks: Dict[Tuple[str, ...], Callable[
-                     [Dict[bool, Any]], None
+                     [Dict[bool, Any]], bool
                  ]]) -> None:
         self.hint = hint
         self.options = callbacks

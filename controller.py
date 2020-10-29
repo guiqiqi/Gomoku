@@ -47,7 +47,7 @@ class Game:
         self.player.active()
 
     @abstractmethod
-    def swap(self, request: SwapRequest) -> None:
+    def swap(self, request: SwapRequest, callbacks: Dict[bool, Callable]) -> None:
         """Swap player handler"""
         ...
 
@@ -101,8 +101,10 @@ class Game:
             # When player swapping dont change
             except SwapRequest as request:
                 self.player.play(row, column)
-                self.swap(request)
-                self.toggle()
+                self.swap(request, {
+                    True: self.player.active,  # If swapped dont toggle
+                    False: self.toggle   # If not swapped toggle
+                })
                 continue
 
             # For General Rule check exception dont play piece
@@ -138,17 +140,17 @@ class LocalGame(Game):
         for color, name in players.items():
             self._players[color] = LocalPlayer(name, color, self._board)
 
-    def swap(self, request: SwapRequest) -> None:
+    def swap(self, request: SwapRequest, callbacks: Dict[bool, Callable]) -> None:
         """Swap handler for Local Game using tkinter"""
         labels = request.hint
         options = request.options
         title = request.SwapSelectionPanelTitle
 
         # Wrap all callback handlers
-        _options: Dict[Tuple[str, ...], Callable[[], None]] = dict()
+        _options: Dict[Tuple[str, ...], Callable[[], bool]] = dict()
         for key in options:
             _options[key] = lambda func=options[key]: func(self._players)
-        self._board.selpanel(title, labels, _options)
+        self._board.selpanel(title, labels, _options, callbacks)
 
     def start(self) -> None:
         """Start Local Game with UI settings etc."""

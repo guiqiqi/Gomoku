@@ -282,7 +282,9 @@ class Board:
             self._size + self.PADDING + self.OUTLINEMARG)
 
     def selpanel(self, title: str, labels: Tuple[str, ...],
-                 options: Dict[Tuple[str, ...], Callable]) -> tkinter.Toplevel:
+                 options: Dict[Tuple[str, ...], Callable],
+                 callbacks: Dict[bool, Callable]
+        ) -> tkinter.Toplevel:
         """
         Draw a selection panel:
         options is callback vectors, which options is key of Dict:
@@ -295,7 +297,13 @@ class Board:
         which label assigned to layer index of options.keys():
         [
             "Game Type", "Rule"
-        ]
+        ].
+
+        Callbacks:
+        {
+            True: Call if callback function return True
+            False: Call if callback function return False
+        }
         """
         toplevel = tkinter.Toplevel(
             self._root, background=self.SELECT_PANEL_BGC)       
@@ -318,9 +326,15 @@ class Board:
             for value, _menu in menus:
                 selection.append(value.get())
 
-            callback = options.get(tuple(selection), None)
-            if callable(callback):
-                callback()
+            handler = options.get(tuple(selection), None)
+            if callable(handler):
+
+                # Check callback function ret value
+                ret = handler()
+                callback = callbacks.get(ret, None)
+                if callable(callback):
+                    callback()
+
                 toplevel.destroy()
 
         ttk.Button(toplevel, text="Confirm", command=select).grid(
