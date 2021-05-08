@@ -36,11 +36,6 @@ class Game:
         """Return current player"""
         return self._curplayer
 
-    # @property
-    # def paused(self) -> bool:
-    #     """Return if gaming paused"""
-    #     return self._pause
-
     def toggle(self) -> None:
         """Toggle game player"""
         self._curplayer = self._players[not bool(self._curplayer)]
@@ -135,6 +130,7 @@ class LocalGame(Game):
         self._board = Board(self._tkroot, self._size, self._grids)
         self._board.click = self.click
         self._board.restart = self.restart
+        self._board.fundo = self._game.undo
 
         # Initialize gamer
         for color, name in players.items():

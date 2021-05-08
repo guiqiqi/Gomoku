@@ -1,7 +1,7 @@
 """Rule abstract class"""
 
 from abc import abstractmethod
-from typing import Iterable, List, Tuple, Dict, Type
+from typing import List, Set, Tuple, Dict, Type
 
 
 class Rule:
@@ -34,7 +34,7 @@ class Rule:
 
     @abstractmethod
     def __call__(self, position: Tuple[int, int], step: int,
-                 situation: Dict[int, Iterable[Tuple[int, int]]]) -> None:
+                 situation: Dict[int, Set[Tuple[int, int]]]) -> None:
         """
         The instantiated class needs to support this
         __call__ function so that the upper-level 

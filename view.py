@@ -11,7 +11,8 @@ from settings import ViewSettings
 import tkinter
 from tkinter import ttk
 import tkinter.messagebox as msgbox
-from typing import Callable, Dict, Iterable, List, Tuple, Union
+from collections import OrderedDict as odict
+from typing import Callable, Dict, Iterable, List, Optional, Tuple, Union, OrderedDict
 
 
 class Board:
@@ -94,6 +95,7 @@ class Board:
         # Handle left key function
         self._click_handler = None
         self._restart_handler = None
+        self._undo_handler: Optional[Callable[[], Tuple[int, int]]] = None
 
         # Initial menubar
         menubar = tkinter.Menu(self._root)
@@ -104,13 +106,15 @@ class Board:
         menubar.add_cascade(label="Other", menu=other)
 
         # TODO: New Game selection bar
-        controller.add_command(label="New Game")
+        controller.add_command(label="Undo step", command=self._undo)
         controller.add_command(label="Restart Game", command=self._restart)
         controller.add_separator()
         controller.add_command(label="Exit Game", command=self._exit)
 
         # TODO: Add statistics
-        other.add_command(label="Statistics")
+        other.add_command(label="Statistics", command=lambda: msgbox.showinfo(
+            "Step Count", "Game has been played for {0} steps.".format(len(self._pieces))
+        ))
         other.add_separator()
         other.add_command(label="Help", command=self._help)
         other.add_command(label="About", command=self._about)
@@ -120,7 +124,7 @@ class Board:
         root.iconbitmap(self.ICONMAP)
 
         # Record pieces
-        self._pieces: Dict[Tuple[int, int], int] = dict()
+        self._pieces: OrderedDict[Tuple[int, int], int] = odict()
 
     @staticmethod
     def _help() -> None:
@@ -173,6 +177,16 @@ class Board:
         """Set restart handler"""
         self._restart_handler = func
 
+    @property
+    def fundo(self) -> Optional[Callable[[], Tuple[int, int]]]:
+        """Return undo handler"""
+        return self._undo_handler
+
+    @fundo.setter
+    def fundo(self, func: Optional[Callable[[], Tuple[int, int]]]) -> None:
+        """Set undo handler"""
+        self._undo_handler = func
+
     def _click(self, position: tkinter.Event) -> None:
         """Handle for left key click event"""
         _x, _y = position.x - self.PADDING, position.y - self.PADDING
@@ -220,6 +234,15 @@ class Board:
         nx, ny = (xa + xb) / 2, (ya + yb) / 2
         dx, dy = position.x - nx, position.y - ny
         self._board.move(target, dx, dy)
+
+    def _undo(self) -> None:
+        """Undo the last step"""
+        if not msgbox.askyesno("Confirm", "Do you really want undo the last step?"):
+            return
+        if not self._undo_handler or not self._pieces:
+            return
+        x, y = self._undo_handler()
+        self.undo(x, y)
 
     def _exit(self) -> None:
         """Destory window and exit game"""

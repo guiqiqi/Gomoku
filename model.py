@@ -34,6 +34,11 @@ class Manager:
         """Return size of game board"""
         return self._size
 
+    def undo(self) -> Tuple[int, int]:
+        """Undo the last step"""
+        row, column = self._records.pop()
+        return row, column
+
     @property
     def steps(self) -> int:
         """Return steps count"""

@@ -2,8 +2,6 @@
 Game settings and Error definition
 """
 
-from typing import Iterable, Tuple
-
 BLACK = True  # Black Player
 WHITE = False  # White Player
 
