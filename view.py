@@ -155,7 +155,8 @@ class Board:
             self._board.itemconfig(piece, fill=color)
 
         msgbox.showinfo("Congratulations",
-                        "{player} win!".format(player=str(who)))
+                        "{player} win!\nExiting game.".format(player=str(who)))
+        self._root.destroy()
 
     @property
     def click(self) -> Union[Callable[[int, int], None], None]:
