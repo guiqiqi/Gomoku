@@ -219,9 +219,9 @@ class Board:
             self._board.destroy()
 
             # Retstart handlers and board view
-            handlers = self._restart_handler, self._click_handler
+            handlers = self._restart_handler, self._click_handler, self._undo_handler
             self.__init__(self._root, self._size, self._grids)
-            self._restart_handler, self._click_handler = handlers
+            self._restart_handler, self._click_handler, self._undo_handler = handlers
             self.draw()
 
             if not self._restart_handler is None:

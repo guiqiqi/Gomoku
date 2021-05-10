@@ -73,7 +73,9 @@ class Game:
     def restart(self) -> None:
         """Restart handler function"""
         self._game.reset()
+        oldplayer = self._curplayer
         self._curplayer = self._players[True]
+        oldplayer.handler(-1, -1)
         self.player.active()
 
     def gaming(self) -> None:
