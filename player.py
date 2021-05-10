@@ -21,8 +21,6 @@ class Player:
 
     def handler(self, row, column) -> None:
         """Set click event bounding to click function"""
-        if not self._event.empty():
-            self._event.get_nowait()
         self._event.put((row, column))
 
     @property

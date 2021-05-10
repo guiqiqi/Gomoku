@@ -37,6 +37,7 @@ class Manager:
     def undo(self) -> Tuple[int, int]:
         """Undo the last step"""
         row, column = self._records.pop()
+        self._board[row][column] = None
         return row, column
 
     @property

@@ -13,7 +13,7 @@ from rules import Rule
 from model import Manager
 from player import LocalPlayer, Player
 from view import Board
-from error import SwapRequest, GameEnded, RuleException, GameWon, InvalidPosition, SettedGridError
+from error import InvalidGridError, SwapRequest, GameEnded, RuleException, GameWon, InvalidPosition, SettedGridError
 
 
 class Game:
@@ -87,6 +87,8 @@ class Game:
                 break
             except SettedGridError:
                 continue
+            except InvalidGridError:
+                continue
 
             except GameWon as error:
                 self.player.play(row, column)
@@ -130,11 +132,18 @@ class LocalGame(Game):
         self._board = Board(self._tkroot, self._size, self._grids)
         self._board.click = self.click
         self._board.restart = self.restart
-        self._board.fundo = self._game.undo
+        self._board.fundo = self.undo
 
         # Initialize gamer
         for color, name in players.items():
             self._players[color] = LocalPlayer(name, color, self._board)
+
+    def undo(self) -> Tuple[int, int]:
+        """Undo last step"""
+        x, y = self._game.undo()
+        self.player.handler(-1, -1)
+        self.toggle()
+        return x, y
 
     def swap(self, request: SwapRequest, callbacks: Dict[bool, Callable]) -> None:
         """Swap handler for Local Game using tkinter"""

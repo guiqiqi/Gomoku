@@ -271,6 +271,7 @@ class Board:
         """Undo canvas draw"""
         piece = self._pieces.get((row, column), None)
         if piece:
+            self._pieces.pop((row, column))
             self._board.delete(piece)
 
     def draw(self) -> None:
@@ -307,7 +308,7 @@ class Board:
     def selpanel(self, title: str, labels: Tuple[str, ...],
                  options: Dict[Tuple[str, ...], Callable],
                  callbacks: Dict[bool, Callable]
-        ) -> tkinter.Toplevel:
+        ) -> None:
         """
         Draw a selection panel:
         options is callback vectors, which options is key of Dict:
@@ -367,7 +368,6 @@ class Board:
 
         # Disable click when not selecting
         self._root.wait_window(toplevel)
-        return toplevel
 
 
 # Test game viewing
